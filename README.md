@@ -10,4 +10,4 @@ In this project, I created a bot to like the posts of a certain page that you ca
 pyautogui_completing_guitar_game:
 In this project, I created a bot that completes the Guitar Flash game. It identifies RGB colors and presses the correct button at the right time to achieve the highest score.
 
-
+Crawlers: Crawlers: In the crawler projects, I used the Scrapy library functions to swap information from websites, using XPATH.
