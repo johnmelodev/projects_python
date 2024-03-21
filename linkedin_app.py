@@ -1,4 +1,4 @@
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, NoSuchElementException, ElementNotVisibleException, ElementNotSelectableException
 import os
 import random
 from time import sleep
@@ -7,12 +7,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as condicao_esperada
-from selenium.common.exceptions import *
-# You can use headless mode to not show the google chrome window open
+from selenium.webdriver.support import expected_conditions
 
 
-def iniciar_driver():
+def start_driver():
     chrome_options = Options()
     arguments = ['--lang=en', '--window-size=1300,1000']
 
@@ -23,11 +21,9 @@ def iniciar_driver():
         'download.prompt_for_download': False,
         'profile.default_content_setting_values.notifications': 2,
         'profile.default_content_setting_values.automatic_downloads': 1
-
     })
 
     driver = webdriver.Chrome(options=chrome_options)
-
     wait = WebDriverWait(
         driver,
         10,
@@ -38,44 +34,32 @@ def iniciar_driver():
             ElementNotSelectableException,
         ]
     )
-
     return driver, wait
 
-# Campo Login
 
-
-def automatizar_conexoes_linkedin(profissao):
-    driver, wait = iniciar_driver()
-    # 1. Opening the linkedin website
+def automate_linkedin_connections(job):
+    driver, wait = start_driver()
     driver.get('https://www.linkedin.com/login')
-    # 2. Enter the log in
-    campo_login = wait.until(condicao_esperada.visibility_of_element_located(
+
+    login_field = wait.until(expected_conditions.visibility_of_element_located(
         (By.XPATH, "//input[@id='username']")))
-    sleep(random.randint(1, 3))
-    campo_login.click()
-    sleep(random.randint(1, 3))
-    campo_login.send_keys('joaohenrique1231500@gmail.com')
-    sleep(random.randint(1, 3))
-    campo_senha = wait.until(condicao_esperada.visibility_of_element_located(
+    login_field.send_keys('youremail')
+
+    password_field = wait.until(expected_conditions.visibility_of_element_located(
         (By.XPATH, "//input[@id='password']")))
-    sleep(random.randint(1, 3))
-    campo_senha.click()
-    sleep(random.randint(1, 3))
-    campo_senha.send_keys('your_custom_password')
-    sleep(random.randint(1, 3))
-    campo_sign = wait.until(condicao_esperada.visibility_of_element_located(
+    password_field.send_keys('yourpassword')
+
+    sign_in_button = wait.until(expected_conditions.visibility_of_element_located(
         (By.XPATH, "//button[text()='Sign in']")))
-    sleep(random.randint(1, 3))
-    campo_sign.click()
+    sign_in_button.click()
     sleep(random.randint(3, 6))
 
-    driver.get(
-        'https://www.linkedin.com/search/results/people/?keywords=developer&origin=SWITCH_SEARCH_VERTICAL&sid=~Mn')
-
+    driver.get('https://www.linkedin.com/search/results/people/?activelyHiring="true"&keywords=django&origin=FACETED_SEARCH&page=70&sid=Xjm')
     sleep(3)
-    existe_proxima_pagina = True
 
-    while existe_proxima_pagina is True:
+    has_next_page = True
+
+    while has_next_page:
         sleep(3)
         driver.execute_script(
             "window.scrollTo(0, document.body.scrollHeight);")
@@ -83,68 +67,55 @@ def automatizar_conexoes_linkedin(profissao):
         driver.execute_script("window.scrollTo(0, document.body.scrollTop);")
 
         try:
-            # 8. Verify if the field contains the text "connect"
-            botoes_conectar = wait.until(condicao_esperada.visibility_of_all_elements_located(
+            connect_buttons = wait.until(expected_conditions.visibility_of_all_elements_located(
                 (By.XPATH, "//button//span[text()='Connect']")))
         except TimeoutException:
             driver.execute_script(
                 "window.scrollTo(0, document.body.scrollHeight);")
             sleep(2)
-            botao_proximo = wait.until(condicao_esperada.element_to_be_clickable(
+            next_button = wait.until(expected_conditions.element_to_be_clickable(
                 (By.XPATH, "//span[@class='artdeco-button__text' and text()='Next']")))
-            sleep(random.randint(1, 3))
-            botao_proximo.click()
-            sleep(random.randint(1, 3))
+            next_button.click()
             continue
 
-        for botao in botoes_conectar:
-            botao.click()
+        for button in connect_buttons:
+            button.click()
             sleep(random.randint(1, 3))
-            # 9. Click in the connect field
-            nome_contato = wait.until(condicao_esperada.visibility_of_element_located(
+
+            contact_name = wait.until(expected_conditions.visibility_of_element_located(
                 (By.XPATH, "//span[@class='flex-1']//strong")))
-            sleep(random.randint(1, 3))
-            nome_contato = nome_contato.text
-            nome_contato = nome_contato.split()[0]
+            contact_name = contact_name.text.split()[0]
 
-            # 10. localize the add field
-            botao_adicionar_nota = wait.until(condicao_esperada.visibility_of_element_located(
+            add_note_button = wait.until(expected_conditions.visibility_of_element_located(
                 (By.XPATH, "//button[@aria-label='Add a note']")))
-            sleep(random.randint(2, 4))
-            botao_adicionar_nota.click()
+            add_note_button.click()
             sleep(random.randint(1, 3))
-            # 11. Extract the name of the person for a personalized message
 
-            # 12. Include the name in a personalized message
-            mensagem_personalizada = f"Hi {
-                nome_contato}, my name is Joao. I’m a Python software developer, always looking to evolve in my field. I believe that connecting with talented people always motivates us to progress. Regardless, I liked your profile and would like to keep in touch. Best regards!"
+            custom_message = f"Hello {
+                contact_name}, Custom message"
 
-            # 14. Typing the message
-            campo_mensagem_convite = wait.until(condicao_esperada.visibility_of_element_located(
+            message_field = wait.until(expected_conditions.visibility_of_element_located(
                 (By.XPATH, "//textarea[@name='message']")))
-            sleep(random.randint(1, 3))
-
-            campo_mensagem_convite.send_keys(mensagem_personalizada)
+            message_field.send_keys(custom_message)
             sleep(5)
-            botao_enviar = wait.until(condicao_esperada.visibility_of_element_located(
+
+            send_button = wait.until(expected_conditions.visibility_of_element_located(
                 (By.XPATH, "//button[@aria-label='Send now']")))
-            sleep(random.randint(1, 3))
-            botao_enviar.click()
+            send_button.click()
             sleep(random.randint(1, 3))
 
         try:
             driver.execute_script(
                 "window.scrollTo(0, document.body.scrollHeight);")
             sleep(2)
-            botao_proximo = wait.until(condicao_esperada.element_to_be_clickable(
+            next_button = wait.until(expected_conditions.element_to_be_clickable(
                 (By.XPATH, "//span[@class='artdeco-button__text' and text()='Next']")))
-            sleep(random.randint(1, 3))
-            botao_proximo.click()
+            next_button.click()
             sleep(random.randint(1, 3))
         except Exception as error:
-            print('Automação chegou até a última página')
-            existe_proxima_pagina = False
+            print('Automation reached the last page')
+            has_next_page = False
             driver.close()
 
 
-automatizar_conexoes_linkedin("Python")
+automate_linkedin_connections("Python")
