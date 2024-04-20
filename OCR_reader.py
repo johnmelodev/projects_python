@@ -1,23 +1,22 @@
-# Importando as bibliotecas necessárias
+# Importing the necessary libraries
 import cv2
 import pytesseract
 
+# Asking the user to enter the image path
+input_path = input("Please, enter the image path: ")
 
-# Solicitando ao usuário que insira o caminho da imagem
-input_path = input("Por favor, insira o caminho da imagem: ")
+# Loading the image
+image = cv2.imread(input_path)
 
-# Carregando a imagem
-imagem = cv2.imread(input_path)
-
-# Verificando se a imagem foi carregada corretamente
-if imagem is None:
-    print(f"Não foi possível abrir a imagem {input_path}")
+# Checking if the image was loaded correctly
+if image is None:
+    print(f"Could not open the image {input_path}")
 else:
-    # Utilizando o Tesseract para extrair o texto da imagem
-    texto = pytesseract.image_to_string(imagem, lang='por')
+    # Using Tesseract to extract the text from the image
+    text = pytesseract.image_to_string(image, lang='eng')
 
-    # Imprimindo o texto extraído
-    print(texto)
+    # Printing the extracted text
+    print(text)
 
 ''' pip3 install
 
